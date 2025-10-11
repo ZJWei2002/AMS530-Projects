@@ -133,7 +133,7 @@ def test_tie_case():
             print(f"Arrays assigned to processors:")
             print(f"  Process 0: [5 3 7 1]")
             print(f"  Process 1: [5 3 2 1]")
-            print(f"\nGot:      {result}")
+            print(f"\nGot: {result}")
             
             # For ties case, verify that the result is valid
             # Position 0: min(5,5) = 5, can be rank 0 or 1
@@ -202,11 +202,11 @@ def verify_with_generated_data():
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
+    N = 10
     
     # Generate test data
     if rank == 0:
         P = size
-        N = 10
         arrays = generate_test_arrays(P, N)
         correct_answer = calculate_correct_answer(arrays)
         
@@ -224,9 +224,6 @@ def verify_with_generated_data():
         # Receive array from root
         local_array = comm.recv(source = 0, tag = 0)
         correct_answer = None
-    
-    # Broadcast N to all processes
-    N = comm.bcast(N if rank == 0 else None, root = 0)
     
     result = MY_Global_Min_Loc(local_array, N, root = 0, comm = comm)
     
@@ -330,7 +327,7 @@ def main():
                 f.write("  Process 1: [5 6 7 2]\n")
                 f.write("  Process 2: [9 8 6 1]\n")
                 f.write(f"\nExpected: {example_test_result['expected']}\n")
-                f.write(f"Got: {example_test_result['got']}\n\n")
+                f.write(f"Got:      {example_test_result['got']}\n\n")
             
             # Tie case test
             if tie_test_result:
@@ -357,7 +354,7 @@ def main():
                     f.write("Arrays: Generated test data\n")
                 
                 f.write(f"\nExpected: {generated_test_result['expected']}\n")
-                f.write(f"Got: {generated_test_result['got']}\n\n")
+                f.write(f"Got:      {generated_test_result['got']}\n\n")
             
             f.write("=== Performance Tests ===\n")
             f.write("Timing Results:\n")
