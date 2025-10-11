@@ -30,8 +30,8 @@ def MY_Global_Min_Loc(local_array: np.ndarray, N: int, root: int = 0, comm: MPI.
             partner_v = vrank ^ step
             partner = (partner_v + root) % size
 
-            comm.Send([min_vals, MPI.DOUBLE], dest=partner, tag=100)
-            comm.Send([min_owners, MPI.INT],  dest=partner, tag=101)
+            comm.Send([min_vals, MPI.DOUBLE], dest=partner, tag = 100)
+            comm.Send([min_owners, MPI.INT], dest=partner, tag = 101)
             break
 
         else:
@@ -39,11 +39,11 @@ def MY_Global_Min_Loc(local_array: np.ndarray, N: int, root: int = 0, comm: MPI.
             if partner_v < size:
                 partner = (partner_v + root) % size
 
-                recv_vals   = np.empty(N, dtype=min_vals.dtype)
+                recv_vals = np.empty(N, dtype=min_vals.dtype)
                 recv_owners = np.empty(N, dtype=min_owners.dtype)
 
-                comm.Recv([recv_vals,   MPI.DOUBLE], source=partner, tag=100)
-                comm.Recv([recv_owners, MPI.INT],    source=partner, tag=101)
+                comm.Recv([recv_vals,   MPI.DOUBLE], source=partner, tag = 100)
+                comm.Recv([recv_owners, MPI.INT], source=partner, tag = 101)
 
                 better = recv_vals < min_vals
                 ties   = recv_vals == min_vals
@@ -125,7 +125,7 @@ def test_tie_case():
             local_array = np.array([10 + rank] * N)
         
         # Call MY_Global_Min_Loc
-        result = MY_Global_Min_Loc(local_array, N, root=0, comm=comm)
+        result = MY_Global_Min_Loc(local_array, N, root = 0, comm = comm)
         
         # Verify result on root
         if rank == 0:
@@ -173,7 +173,7 @@ def test_example():
             local_array = np.array([1000 + rank * N + i for i in range(N)])
         
         # Call MY_Global_Min_Loc
-        result = MY_Global_Min_Loc(local_array, N, root=0, comm=comm)
+        result = MY_Global_Min_Loc(local_array, N, root = 0, comm = comm)
         
         # Verify result on root
         if rank == 0:
@@ -212,7 +212,7 @@ def verify_with_generated_data():
         
         
         # Save correct answer for verification
-        np.savetxt("correct_answer.txt", correct_answer, fmt='%d')
+        np.savetxt("correct_answer.txt", correct_answer, fmt = '%d')
         
         # Distribute arrays to processes
         for p in range(P):
@@ -272,7 +272,7 @@ def run_performance_test(P, N):
     
     # Measure execution time using MPI_Wtime
     start_time = MPI.Wtime()
-    result = MY_Global_Min_Loc(local_array, N, root=0, comm=comm)
+    result = MY_Global_Min_Loc(local_array, N, root=0, comm = comm)
     end_time = MPI.Wtime()
     
     execution_time = end_time - start_time
