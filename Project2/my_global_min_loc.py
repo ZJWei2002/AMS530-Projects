@@ -105,6 +105,53 @@ def calculate_correct_answer(arrays):
     
     return result
 
+def test_tie_case():
+    """Test with tie case where multiple processes have same minimum values"""
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+    
+    if size >= 2:
+        N = 4
+        local_array = np.zeros(N, dtype=int)
+        
+        # Create test case with ties
+        if rank == 0:
+            local_array = np.array([5, 3, 7, 1])
+        elif rank == 1:
+            local_array = np.array([5, 3, 2, 1])
+        else:
+            # For ranks > 1, use dummy values
+            local_array = np.array([10 + rank] * N)
+        
+        # Call MY_Global_Min_Loc
+        result = MY_Global_Min_Loc(local_array, N, root=0, comm=comm)
+        
+        # Verify result on root
+        if rank == 0:
+            print(f"\n=== Tie Case Test ===")
+            print(f"Arrays assigned to processors:")
+            print(f"  Process 0: [5 3 7 1]")
+            print(f"  Process 1: [5 3 2 1]")
+            print(f"\nGot:      {result}")
+            
+            # For ties case, verify that the result is valid
+            # Position 0: min(5,5) = 5, can be rank 0 or 1
+            # Position 1: min(3,3) = 3, can be rank 0 or 1  
+            # Position 2: min(7,2) = 2, must be rank 1
+            # Position 3: min(1,1) = 1, can be rank 0 or 1
+            valid_result = (result[2] == 1) and (result[0] in (0,1)) and (result[1] in (0,1)) and (result[3] in (0,1))
+            
+            return {
+                'name': 'Tie Case Test',
+                'input': 'P = 2, N = 4 with arrays [5,3,7,1], [5,3,2,1]',
+                'expected': 'Any valid rank for ties (position 2 must be rank 1)',
+                'got': result.tolist(),
+                'passed': valid_result
+            }
+    
+    return None
+
 def test_example():
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -143,7 +190,7 @@ def test_example():
             
             return {
                 'name': 'Example from Problem Description',
-                'input': 'P=3, N=4 with arrays [1,9,3,4], [5,6,7,2], [9,8,6,1]',
+                'input': 'P = 3, N = 4 with arrays [1,9,3,4], [5,6,7,2], [9,8,6,1]',
                 'expected': expected.tolist(),
                 'got': result.tolist(),
                 'passed': is_correct
@@ -185,7 +232,7 @@ def verify_with_generated_data():
     
     # Verify result
     if rank == 0:
-        print(f"\n=== Verification Results ===")
+        print(f"\n=== Random Array Verification ===")
         print(f"Arrays assigned to processors:")
         for p in range(P):
             print(f"  Process {p}: {arrays[p]}")
@@ -250,6 +297,9 @@ def main():
     # Test correctness with example from problem descritpion
     example_test_result = test_example()
     
+    # Test correctness with tie case
+    tie_test_result = test_tie_case()
+    
     # Test correctness with generated data
     generated_test_result = verify_with_generated_data()
     
@@ -282,6 +332,16 @@ def main():
                 f.write(f"\nExpected: {example_test_result['expected']}\n")
                 f.write(f"Got: {example_test_result['got']}\n\n")
             
+            # Tie case test
+            if tie_test_result:
+                f.write(f"{tie_test_result['name']}\n")
+                f.write(f"Input: {tie_test_result['input']}\n")
+                f.write("Arrays assigned to processors:\n")
+                f.write("  Process 0: [5 3 7 1]\n")
+                f.write("  Process 1: [5 3 2 1]\n")
+                f.write(f"\nExpected: {tie_test_result['expected']}\n")
+                f.write(f"Got: {tie_test_result['got']}\n\n")
+            
             # Generated data test
             if generated_test_result:
                 f.write(f"{generated_test_result['name']}\n")
@@ -296,9 +356,8 @@ def main():
                 except:
                     f.write("Arrays: Generated test data\n")
                 
-                f.write(f"Expected: {generated_test_result['expected']}\n")
-                f.write(f"Got: {generated_test_result['got']}\n")
-                f.write(f"Result: {'PASSED' if generated_test_result['passed'] else 'FAILED'}\n\n")
+                f.write(f"\nExpected: {generated_test_result['expected']}\n")
+                f.write(f"Got: {generated_test_result['got']}\n\n")
             
             f.write("=== Performance Tests ===\n")
             f.write("Timing Results:\n")
