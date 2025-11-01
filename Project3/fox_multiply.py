@@ -16,7 +16,6 @@ def main():
         return
     
     block_size = int(sys.argv[1])
-    test_type = sys.argv[2]
     
     sqrt_P = int(np.sqrt(size))
     if sqrt_P * sqrt_P != size:
@@ -27,8 +26,8 @@ def main():
     total_N = block_size * sqrt_P
     
     if rank == 0:
-        print(f"Fox's Algorithm - Processors: {size}, Matrix Size: {total_N}×{total_N}")
-        print(f"Block size per processor: {block_size}×{block_size}")
+        print(f"Fox's Algorithm - Processors: {size}, Matrix Size: {total_N}*{total_N}")
+        print(f"Block size per processor: {block_size}*{block_size}")
     
     seed = 42 + rank
     np.random.seed(seed)
