@@ -1,3 +1,13 @@
+## Project Structure
+The Project4 folder contains the following files and directories:
+```
+Project4/
+├── problem4_1.py              # Main implementation with parallel algorithms
+├── run_experiments_4_1.py     # Experiment runner script
+├── results_4_1.txt            # Generated results file
+└── Project 4 -- Zijun Wei.md  # This report
+```
+---
 # Problem 4.1
 ## Problem Description![[Pasted image 20251114203510.png]]
 
