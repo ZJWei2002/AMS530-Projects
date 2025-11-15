@@ -1,6 +1,6 @@
 ## Please check the link below to see the programming part of this Project. The repository includes:
 
-## Link: [https://github.com/ZJWei2002/AMS530-Projects/tree/main/Project4]
+## Link: https://github.com/ZJWei2002/AMS530-Projects/tree/main/Project4
 
 ## Project Structure
 The Project4 folder contains the following files and directories:
@@ -9,6 +9,7 @@ Project4/
 ├── problem4_1.py              # Main implementation with parallel algorithms
 ├── run_experiments_4_1.py     # Experiment runner script
 ├── results_4_1.txt            # Generated results file
+├── README.md                  # readme
 └── Project 4 -- Zijun Wei.md  # This report
 ```
 
@@ -89,10 +90,9 @@ python run_experiments_4_1.py
 This script runs experiments for P ∈ {1, 4, 16} and generates the results file `results_4_1.txt`.
 
 ---
-### 2. Results
+### 2. Results(from `results_4_1.txt`)
 
-![[Pasted image 20250101_000001.png]]
-
+![[Pasted image 20251114211814.png]]
 #### Computed Values
 **Surface Area:**
 - P=1: 202.932103
@@ -104,16 +104,8 @@ This script runs experiments for P ∈ {1, 4, 16} and generates the results file
 - P=4: 127,814,450 FLOPs/core
 - P=16: 31,953,612 FLOPs/core
 
-#### Observations
-- **Results are identical** across all processor counts (P=1, P=4, P=16)
-- Surface Area: 202.932103 (consistent across all P values, achieving 3+ decimal digits of accuracy)
-- Grid resolution of 300×300×300 provides sufficient accuracy
-- FLOP counts per core scale inversely with processor count, indicating excellent load balancing
-
 ---
 ### 3. FLOPs Analysis
-
-![[Pasted image 20250101_000002.png]]
 
 #### FLOPs Scaling Analysis
 **Surface Area Computation:**
@@ -140,20 +132,6 @@ Computed surface area remains constant across all processor counts:
 - **P=1**: 202.932103
 - **P=4**: 202.932103
 - **P=16**: 202.932103
-
-#### Root Causes
-**Excellent Load Balancing**: Domain decomposition along x-axis distributes work evenly across processors. The remainder handling ensures all processors have similar workloads.
-
-**Minimal Communication**: Only one MPI_Reduce operation at the end to sum local contributions. No communication during computation, eliminating synchronization overhead.
-
-**Embarrassingly Parallel**: No dependencies between grid points. Each processor can compute its portion completely independently.
-
-**Deterministic Algorithm**: Same algorithm across all processors ensures identical results, confirming numerical correctness.
-
-#### Scalability
-- **Strong Scaling**: Excellent - FLOP counts per core scale inversely with P, indicating near-perfect parallel efficiency
-- **Efficiency**: E(P) ≈ 100% for all tested processor counts
-- **Weak Scaling**: Not evaluated, but expected to maintain efficiency for larger problem sizes
 
 #### Conclusions
 Surface area computation demonstrates excellent parallel scaling with near-perfect efficiency. The algorithm achieves ideal speedup because communication overhead is minimal (single reduction) and work is evenly distributed. Results are identical across all processor counts, confirming both correctness and numerical stability of the parallel implementation.
@@ -225,10 +203,9 @@ python run_experiments_4_1.py
 This script runs experiments for P ∈ {1, 4, 16} and generates the results file `results_4_1.txt`.
 
 ---
-### 2. Results
+### 2. Results (from `results_4_1.txt`)
 
-![[Pasted image 20250101_000003.png]]
-
+![[Pasted image 20251114212310.png]]
 #### Computed Values
 **Mass (t=1):**
 - P=1: 1.658121
@@ -240,17 +217,8 @@ This script runs experiments for P ∈ {1, 4, 16} and generates the results file
 - P=4: 111,147,840 FLOPs/core
 - P=16: 27,786,960 FLOPs/core
 
-#### Observations
-- **Results are identical** across all processor counts (P=1, P=4, P=16)
-- Mass at t=1: 1.658121 (consistent across all P values, achieving 3+ decimal digits of accuracy)
-- At t=1, f=60 Hz: sin(120π) = 0, so density = 0.5 (constant)
-- Mass = 1.658121 → Volume = 1.658121 / 0.5 = 3.316242
-- FLOP counts per core scale inversely with processor count, indicating excellent load balancing
-
 ---
 ### 3. FLOPs Analysis
-
-![[Pasted image 20250101_000004.png]]
 
 #### FLOPs Scaling Analysis
 **Mass Computation:**
@@ -283,48 +251,5 @@ Computed mass remains constant across all processor counts:
 - Therefore: ρ = ρ₀ × (1 + 0) / 2 = 0.5
 - Mass = 1.658121 → Volume = 1.658121 / 0.5 = 3.316242
 
-#### Root Causes
-**Excellent Load Balancing**: Same domain decomposition strategy as surface area ensures even work distribution. Each processor handles approximately n_grid³ / P grid points.
-
-**Minimal Communication**: Only one MPI_Reduce operation at the end. No communication during computation, eliminating synchronization overhead.
-
-**Embarrassingly Parallel**: No dependencies between grid points. Each processor can compute its portion completely independently.
-
-**Efficient Inside/Outside Test**: Simple sign check (f < 0) is computationally cheap and allows skipping exterior points.
-
-**Deterministic Algorithm**: Same algorithm across all processors ensures identical results, confirming numerical correctness.
-
-#### Scalability
-- **Strong Scaling**: Excellent - FLOP counts per core scale inversely with P, indicating perfect parallel efficiency
-- **Efficiency**: E(P) = 100% for all tested processor counts
-- **Weak Scaling**: Not evaluated, but expected to maintain efficiency for larger problem sizes
-
 #### Conclusions
 Mass computation demonstrates perfect parallel scaling with 100% efficiency. The algorithm achieves ideal speedup because communication overhead is minimal (single reduction) and work is evenly distributed. Results are identical across all processor counts, confirming both correctness and numerical stability. The computed mass value (1.658121) is consistent with the analytical density value (0.5) at t=1, providing additional verification of correctness.
-
----
-## Summary
-
-Both surface area and mass computations demonstrate excellent parallel performance:
-
-**Surface Area:**
-- Perfect scaling: FLOP counts per core decrease by exactly factor of P
-- Consistent results: 202.932103 across all processor counts
-- Efficiency: ≈ 100% for all tested configurations
-
-**Mass:**
-- Perfect scaling: FLOP counts per core decrease by exactly factor of P
-- Consistent results: 1.658121 across all processor counts
-- Efficiency: 100% for all tested configurations
-
-**Key Success Factors:**
-1. **Embarrassingly parallel**: No dependencies between grid points
-2. **Minimal communication**: Only single reduction operation
-3. **Excellent load balancing**: Even work distribution across processors
-4. **Deterministic algorithms**: Ensures identical results across all processors
-
-The implementation successfully meets all requirements:
-- ✅ Use P ∈ {1, 4, 16} cores
-- ✅ Achieve at least 3 decimal digits of accuracy
-- ✅ Report FLOPs per core for each case
-
