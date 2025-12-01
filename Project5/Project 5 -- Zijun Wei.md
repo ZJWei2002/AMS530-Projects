@@ -132,9 +132,9 @@ Each point represents a particle at position \((x, y)\), colored by its computed
 ![[project5_case1_energy_heatmap.png]]
 
 Observations:
-- Particle density gradually increases from the bottom-left corner towards the top-right corner, reflecting that the local particle count n(alpha, beta) is proportional to alpha + beta.
-- From the color bar (maximum on the order of 10^30), we infer a very small number of extremely high-energy particles caused by rare, very close pairs; these outliers set the top of the color scale.
-- Because almost all other particles have much smaller energies, most visible points collapse into the dark-purple end of the colormap and look very similar.
+- Particle density gradually increases from the bottom-left corner towards the top-right corner.
+- Because the full energy range is used for the color scale, a small number of extremely high-energy particles (from very close pairs) stretches the color bar up to about 10^30.
+- As a result, most particles with much smaller energies appear in dark purple, and only a few points in the densest upper-right region reach noticeably brighter colors.
 
 #### Case 2: Per-Particle Energy
 
@@ -143,7 +143,8 @@ Observations:
 Observations:
 - The diagonal sub-boxes with alpha = beta are empty, creating an obvious staircase pattern of empty squares across the domain.
 - Densities increase as we move away from the diagonal, consistent with n(alpha, beta) being proportional to |alpha − beta|.
-- The color bar range (up to about 10^34) shows that there are rare, extremely high-energy outliers, but they are statistically few and visually hard to distinguish because most particles lie at the dark-purple, low-energy end of the colormap.
+- Using the complete energy range, the color bar extends to about 10^34, again dominated by a few extreme-energy particles.
+- Most particles remain in the dark-purple range, but regions farther from the empty diagonal have slightly brighter hues, reflecting their higher typical interaction energies.
 
 #### Case 3: Per-Particle Energy
 
@@ -152,7 +153,8 @@ Observations:
 Observations:
 - The density is lowest near the bottom-left corner and highest near the top-right corner, matching the product-based distribution n(alpha, beta) proportional to alpha · beta.
 - Compared to Case 1, the density gradient is more extreme, leading to a pronounced clustering in sub-boxes with large (alpha, beta) indices.
-- The maximum energies are even larger (on the order of 10^36), indicating rare, extremely close pairs; these outliers determine the color scale, so almost all visible particles again appear in the dark, low-energy range of the colormap.
+- With the full (unclipped) energy range, the maximum reaches roughly 10^36, indicating extremely close pairs in the most crowded regions.
+- This again causes most particles to appear in dark colors, but the top-right corner, where density and neighbor counts are highest, still shows relatively brighter points corresponding to larger typical energies.
 
 ### 2. Per-Rank Timing Results
 
@@ -160,33 +162,28 @@ For each case, rank 0 writes a text file `project5_caseX_timings.txt` containing
 
 #### Case 1: Timings
 
-![[PROJECT5_CASE1_TIMINGS.png]]
+![[project5_case1_timings 3.png]]
 
 From `project5_case1_timings.txt`:
-
-- Times per rank are tightly clustered around 18.0 seconds.
-- Minimum time ≈ 17.59 s, maximum time ≈ 18.02 s.
-- The spread is less than 2% of the mean, indicating excellent load balance.
+- Times per rank are tightly clustered around 32.0 seconds.
+- Minimum time ≈ 32.01 s, maximum time ≈ 32.04 s, so the total spread is only about 0.03 s.
 
 #### Case 2: Timings
 
-![[PROJECT5_CASE2_TIMINGS.png]]
+![[project5_case2_timings 1.png]]
 
 From `project5_case2_timings.txt`:
-
-- Times per rank are clustered around 18.0 seconds.
-- Minimum time ≈ 17.94 s, maximum time ≈ 18.03 s.
-- The variation across ranks is extremely small, again confirming quasi-perfect particle-based load balancing, despite the highly non-uniform spatial distribution with empty diagonal sub-boxes.
+- Times per rank are clustered around 29.0 seconds.
+- Minimum time ≈ 28.88 s, maximum time ≈ 29.00 s, giving a spread of roughly 0.12 s (well below 0.5% of the mean).
 
 #### Case 3: Timings
 
-![[PROJECT5_CASE3_TIMINGS.png]]
+![[project5_case3_timings 1.png]]
 
 From `project5_case3_timings.txt`:
-- Times per rank are clustered around 28.4 seconds.
-- Minimum time ≈ 28.36 s, maximum time ≈ 28.42 s.
-- All ranks incur a similar runtime even though the physical density is strongly skewed, confirming that work is dominated by the number of owned particles rather than their specific locations.
-- The overall runtime is higher than Cases 1 and 2 due to the increased average number of neighbors within the cutoff in the densest regions.
+- Times per rank are clustered around 29.9 seconds.
+- Minimum time ≈ 29.82 s, maximum time ≈ 29.90 s, for a spread of about 0.08 s (well under 0.3% of the mean).
+- Comparing cases, Cases 2 and 3 are slightly faster than Case 1, consistent with small differences in neighbor counts and memory behavior, but all three show similarly tight timing bands.
 
 ---
 
@@ -213,7 +210,7 @@ For each case:
 - For each i-particle, we loop over all N = 15,000 particles to test which pairs fall within the cutoff.
 - This yields O(N² / P) total work, i.e., O(N² / 25).
 
- The absolute runtimes (≈18–28 seconds per case on 25 cores) are consistent with:
+ The absolute runtimes (≈29–32 seconds per case on 25 cores) are consistent with:
 - ~9 million pair checks per rank per case.
 - Additional overhead for evaluating the Lennard–Jones potential and accumulating energies.
 
@@ -226,8 +223,6 @@ If further optimization were required, potential extensions include:
   - Decompose the spatial domain and restrict pair searches to neighboring cells.
 - Vectorization and NumPy acceleration:
   - Vectorize inner loops over `j` to exploit SIMD and efficient array operations.
-
-For the purposes of this project, however, the current implementation already satisfies all requirements: correct physics, non-uniform particle distributions, 25-core execution, and clearly demonstrated quasi-load balance.
 
 ---
 

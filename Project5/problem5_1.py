@@ -1,25 +1,3 @@
-"""
-AMS 530 – Parallel Computing
-Project 5, Problem 5.1
-
-Compute per–particle energies for N = 15,000 particles interacting via a
-truncated Lennard–Jones potential in a 2D box, for three different
-non‑uniform particle distributions (Cases 1–3).
-
-This script is written to be run with MPI:
-
-    mpiexec -n 25 python problem5_1.py
-
-It uses *particle decomposition*: each MPI rank owns a subset of particles
-and is responsible for computing the energies E_i for those particles,
-using the global positions of all particles.  This achieves a quasi‑load
-balance because each rank is assigned (almost) the same number of i‑particles.
-
-For each case we output:
-  - A PNG figure visualising the per‑particle energy (scatter heatmap).
-  - A PNG figure showing per‑rank execution times.
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -43,18 +21,16 @@ SIZE = COMM.Get_size()
 
 @dataclass
 class SimulationParams:
-    """Container for basic simulation parameters."""
-
     N: int = 15_000          # total number of particles
     L: float = 50.0          # domain is [0, L] x [0, L]
-    M: int = 5               # number of sub‑boxes per dimension (5x5 grid)
-    rc: float = 3.0          # cutoff radius for Lennard–Jones potential
+    M: int = 5               # number of sub-boxes per dimension (5x5 grid)
+    rc: float = 3.0          # cutoff radius for Lennard-Jones potential
     seed: int = 12345        # base RNG seed
 
 
 def compute_subbox_counts(case: int, params: SimulationParams) -> np.ndarray:
     """
-    Compute the number of particles in each sub‑box for a given case.
+    Compute the number of particles in each sub-box for a given case.
 
     Returns
     -------
@@ -63,10 +39,10 @@ def compute_subbox_counts(case: int, params: SimulationParams) -> np.ndarray:
 
     Notes
     -----
-    - The formulas in the assignment give *real‑valued* expected counts.
+    - The formulas in the assignment give *real-valued* expected counts.
       We convert them to integers while preserving the total N exactly by
       rounding down and then distributing the remaining particles to the
-      sub‑boxes with the largest fractional remainders.
+      sub-boxes with the largest fractional remainders.
     """
     N, M = params.N, params.M
 
@@ -88,9 +64,9 @@ def compute_subbox_counts(case: int, params: SimulationParams) -> np.ndarray:
 
     total_w = weights.sum()
     if total_w <= 0:
-        raise RuntimeError("Sum of weights is non‑positive; cannot assign particles.")
+        raise RuntimeError("Sum of weights is non-positive; cannot assign particles.")
 
-    # Real‑valued expected counts.
+    # Real-valued expected counts.
     counts_float = N * weights / total_w
 
     # Integer counts via floor + redistribution of remaining particles.
@@ -105,7 +81,7 @@ def compute_subbox_counts(case: int, params: SimulationParams) -> np.ndarray:
             counts_int.flat[idx] += 1
     elif deficit < 0:
         # Remove particles from cells with the smallest fractional part,
-        # while keeping counts non‑negative.
+        # while keeping counts non-negative.
         remainders = (counts_float - counts_int).ravel()
         order = np.argsort(remainders)  # ascending
         removed = 0
@@ -145,8 +121,8 @@ def generate_particle_positions(
     positions_list = []
     subbox_list = []
 
-    for ai in range(M):        # 0‑based index for alpha
-        for bj in range(M):    # 0‑based index for beta
+    for ai in range(M):        # 0-based index for alpha
+        for bj in range(M):    # 0-based index for beta
             n_box = counts[ai, bj]
             if n_box == 0:
                 continue
@@ -161,7 +137,7 @@ def generate_particle_positions(
             positions_box = np.stack((xs, ys), axis=1)
 
             positions_list.append(positions_box)
-            # Store 1‑based (α, β) indices to match the problem statement.
+            # Store 1-based (α, β) indices to match the problem statement.
             subbox_list.append(np.column_stack([
                 np.full(n_box, ai + 1, dtype=int),
                 np.full(n_box, bj + 1, dtype=int),
@@ -200,7 +176,7 @@ def compute_local_energies(
 
         E_i = (1/2) * sum_{j ≠ i} V_ij
 
-    The Lennard–Jones potential is truncated at rc:
+    The Lennard-Jones potential is truncated at rc:
 
         V_ij = 1/r^12 - 2/r^6,  r < rc
               0,               r >= rc
@@ -273,7 +249,7 @@ def plot_case_results(
         # Headless or matplotlib missing; just skip plotting.
         return
 
-    # Scatter heatmap of per‑particle energy.
+    # Scatter heatmap of per-particle energy using the full range of E_i.
     plt.figure(figsize=(6, 5))
     sc = plt.scatter(
         positions[:, 0],
@@ -285,27 +261,37 @@ def plot_case_results(
     plt.colorbar(sc, label=r"$E_i$")
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.title(f"Project 5.1 – Case {case}: per‑particle energy")
+    plt.title(f"Project 5.1 - Case {case}: per-particle energy")
     plt.xlim(0.0, params.L)
     plt.ylim(0.0, params.L)
     plt.tight_layout()
     plt.savefig(f"project5_case{case}_energy_heatmap.png", dpi=200)
     plt.close()
 
-    # Bar plot of per‑rank timings.
+    # Bar plot of per-rank timings.
     ranks = np.arange(timings.size)
     plt.figure(figsize=(6, 4))
-    plt.bar(ranks, timings)
+    plt.bar(ranks, timings, color="tab:blue", edgecolor="black")
+    mean_t = float(timings.mean())
+    plt.axhline(mean_t, color="red", linestyle="--", linewidth=1.5,
+                label=f"mean = {mean_t:.2f} s")
+    # Zoom the y-axis to highlight small variations between ranks.
+    t_min = float(timings.min())
+    t_max = float(timings.max())
+    padding = max(0.05 * (t_max - t_min), 0.05)
+    plt.ylim(t_min - padding, t_max + padding)
     plt.xlabel("MPI rank")
-    plt.ylabel("wall‑time (s)")
-    plt.title(f"Project 5.1 – Case {case}: per‑rank timings")
+    plt.ylabel("wall-time (s)")
+    plt.title(f"Project 5.1 - Case {case}: per-rank timings")
+    plt.grid(axis="y", alpha=0.3)
+    plt.legend(loc="upper right", fontsize="small")
     plt.tight_layout()
     plt.savefig(f"project5_case{case}_timings.png", dpi=200)
     plt.close()
 
 
 def run_case(case: int, params: SimulationParams) -> None:
-    """Run a single test case end‑to‑end."""
+    """Run a single test case end-to-end."""
     if RANK == 0:
         positions, subbox_indices = generate_particle_positions(case, params)
     else:
@@ -346,7 +332,7 @@ def run_case(case: int, params: SimulationParams) -> None:
             header="rank   time_seconds",
             fmt="%3d %.6f",
         )
-        # Also save per‑particle data in case it is useful in post‑processing.
+        # Also save per-particle data in case it is useful in post-processing.
         np.savetxt(
             f"project5_case{case}_particle_data.txt",
             np.column_stack([positions, E_global]),
