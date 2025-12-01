@@ -114,10 +114,7 @@ mpiexec -np 25 python problem5_1.py
 ```
 
 The script will:
-- Print a brief progress log on rank 0:
-  - `[Project 5.1] Running with 25 MPI ranks.`
-  - `=== Case 1 ===`, `=== Case 2 ===`, `=== Case 3 ===`
-  - `All cases completed.`
+- Print a brief progress log on rank 0.
 - Generate text and image files for each case in the `Project5` directory.
 
 ---
@@ -153,7 +150,6 @@ Observations:
 Observations:
 - The density is lowest near the bottom-left corner and highest near the top-right corner, matching the product-based distribution n(alpha, beta) proportional to alpha · beta.
 - Compared to Case 1, the density gradient is more extreme, leading to a pronounced clustering in sub-boxes with large (alpha, beta) indices.
-- With the full (unclipped) energy range, the maximum reaches roughly 10^36, indicating extremely close pairs in the most crowded regions.
 - This again causes most particles to appear in dark colors, but the top-right corner, where density and neighbor counts are highest, still shows relatively brighter points corresponding to larger typical energies.
 
 ### 2. Per-Rank Timing Results
@@ -166,7 +162,7 @@ For each case, rank 0 writes a text file `project5_caseX_timings.txt` containing
 
 From `project5_case1_timings.txt`:
 - Times per rank are tightly clustered around 32.0 seconds.
-- Minimum time ≈ 32.01 s, maximum time ≈ 32.04 s, so the total spread is only about 0.03 s.
+- Minimum time ≈ 32.01 s, maximum time ≈ 32.04 s, the total spread is only about 0.03 s.
 
 #### Case 2: Timings
 
@@ -174,7 +170,7 @@ From `project5_case1_timings.txt`:
 
 From `project5_case2_timings.txt`:
 - Times per rank are clustered around 29.0 seconds.
-- Minimum time ≈ 28.88 s, maximum time ≈ 29.00 s, giving a spread of roughly 0.12 s (well below 0.5% of the mean).
+- Minimum time ≈ 28.88 s, maximum time ≈ 29.00 s, giving a spread of roughly 0.12 s.
 
 #### Case 3: Timings
 

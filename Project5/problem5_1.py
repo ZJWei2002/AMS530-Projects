@@ -36,19 +36,12 @@ def compute_subbox_counts(case: int, params: SimulationParams) -> np.ndarray:
     -------
     counts : ndarray of shape (M, M), dtype=int
         counts[alpha, beta] is n(alpha+1, beta+1) in the problem statement.
-
-    Notes
-    -----
-    - The formulas in the assignment give *real-valued* expected counts.
-      We convert them to integers while preserving the total N exactly by
-      rounding down and then distributing the remaining particles to the
-      sub-boxes with the largest fractional remainders.
     """
     N, M = params.N, params.M
 
     alpha = np.arange(1, M + 1, dtype=float)
     beta = np.arange(1, M + 1, dtype=float)
-    A, B = np.meshgrid(alpha, beta, indexing="ij")  # A: alpha, B: beta
+    A, B = np.meshgrid(alpha, beta, indexing="ij")
 
     if case == 1:
         # Case 1: weights proportional to (α + β)
